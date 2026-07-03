@@ -4,10 +4,10 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "fix/add-algorithm-header" ]
   pull_request:
-    branches: [ "master" ]
-
+    branches: [ "master", "fix/add-algorithm-header" ]
+    
 jobs:
   build:
     runs-on: ${{ matrix.os }}
