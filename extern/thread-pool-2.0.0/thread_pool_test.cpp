@@ -3,6 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <random>
