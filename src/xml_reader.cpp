@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <filesystem>
-#include <direct.h>
 //#define PHT_TEST
 #include <irrXML.h>
 
