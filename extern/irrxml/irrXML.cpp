@@ -23,7 +23,7 @@ public:
 		: File(0), Size(0), Close(true)
 	{
 		// open file
-		fopen_s(&File, filename, "rb");
+		File = fopen(filename, "rb");
 
 		if (File)
 			getFileSize();

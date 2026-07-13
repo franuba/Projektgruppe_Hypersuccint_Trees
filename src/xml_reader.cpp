@@ -1,3 +1,11 @@
+#ifdef _WIN32
+#include <direct.h>
+#define GETCWD _getcwd
+#else
+#include <unistd.h>
+#define GETCWD getcwd
+#endif
+
 #include <iostream>
 #include <filesystem>
 #include <direct.h>
@@ -71,7 +79,7 @@ std::shared_ptr<pht::UnorderedTree<std::string>> pht::XMLReader::readByName(cons
         directory = directory.parent_path();
     }
 
-    directory /= "resources\\";
+    directory /= "resources";
 
 
     std::string xml = ".xml";

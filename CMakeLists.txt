@@ -15,4 +15,7 @@ endif()
 add_subdirectory(extern/irrxml)
 add_subdirectory(extern/succinct_bv)
 add_subdirectory(extern/thread-pool-2.0.0)
-add_subdirectory(python)
+#add_subdirectory(python)
+
+add_compile_options(-fms-extensions)
+
