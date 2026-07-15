@@ -13,7 +13,6 @@ Linux port (WIP) of ChristopherPack's Windows implementation.
 ### Prerequisites
 
 #### Windows
-=======
 This project was originally developed and tested using:
  - Win10 x64
  - MSVC 19.27
