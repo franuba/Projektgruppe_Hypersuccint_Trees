@@ -1,5 +1,7 @@
 # PHT - Projektgruppe Hypersuccinct Trees
 
+Linux port (WIP) of ChristopherPack's Windows implementation.
+
 ## Features
  - Conversion from XML-Files to Hypersuccinct Trees
  - Queries in O(1) on Hypersuccint Trees
@@ -9,7 +11,7 @@
 
 ## Building
 ### Prerequisites
-This project was developed and tested using:
+This project was originally developed and tested using:
  - Win10 x64
  - MSVC 19.27
  - CMake 3.20
