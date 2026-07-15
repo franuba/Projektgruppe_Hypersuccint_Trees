@@ -13,6 +13,7 @@ Linux port (WIP) of ChristopherPack's Windows implementation.
 ### Prerequisites
 
 #### Windows
+=======
 This project was originally developed and tested using:
  - Win10 x64
  - MSVC 19.27
@@ -31,7 +32,7 @@ For Linux, the following tools and libraries are required:
 All external dependencies are included as Git submodules:
  - googletest
  - irrxml
- - succinct_bv
+ - succinct\_bv
  - thread-pool 2.0.0
 
 ### Building
@@ -132,5 +133,3 @@ python gui.py
   ```bash
   sudo apt-get install python3-dev
   ```
-
-
