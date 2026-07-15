@@ -3,4 +3,4 @@
 	url = https://github.com/google/googletest.git
 [submodule "extern/succinct_bv"]
 	path = extern/succinct_bv
-	url = https://github.com/ChristopherPack/succinct-bit-vector.git
+	url = https://github.com/franuba/succinct-bit-vector.git
