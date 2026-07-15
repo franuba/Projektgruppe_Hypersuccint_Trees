@@ -1,5 +1,7 @@
 # PHT - Projektgruppe Hypersuccinct Trees
 
+Linux port (WIP) of ChristopherPack's Windows implementation.
+
 ## Features
  - Conversion from XML-Files to Hypersuccinct Trees
  - Queries in O(1) on Hypersuccint Trees
@@ -9,33 +11,67 @@
 
 ## Building
 ### Prerequisites
-This project was developed and tested using:
+
+#### Windows
+This project was originally developed and tested using:
  - Win10 x64
  - MSVC 19.27
  - CMake 3.20
  - Python 3.9
  - doxygen (optional)
 
-Used libraries (see .gitmodules and extern):
+#### Linux
+For Linux, the following tools and libraries are required:
+ - GCC/Clang with C++17 support
+ - CMake 3.17 or higher
+ - Python 3.8+ (for Python bindings)
+ - doxygen (optional, for documentation)
+
+### Dependencies
+All external dependencies are included as Git submodules:
  - googletest
  - irrxml
  - succinct_bv
  - thread-pool 2.0.0
 
 ### Building
-To build execute the following commands:
+
+#### Linux
+To build on Linux, execute the following commands:
+```bash
+git clone https://github.com/franuba/Projektgruppe_Hypersuccint_Trees
+cd Projektgruppe_Hypersuccint_Trees
+git submodule update --init --recursive
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
+```
+
+**Note:** The example service executable will be located at `./example_service/example_service` (no `.exe` extension).
+
+#### Windows (Original)
+To build on Windows, execute the following commands:
 ```bash
 git clone https://github.com/ChristopherPack/Projektgruppe_Hypersuccint_Trees
-git submodule update --remote --merge
+cd Projektgruppe_Hypersuccint_Trees
+git submodule update --init --recursive
 cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -H. -B./build -G "Visual Studio 16 2019" -T host=x64 -A x64
 cmake --build ./build --config Release
 ```
-Then create a resources folder in the project root directory and add some xml-files (and modify the paths in example_service/example_service.cpp).
+
+### Post-Build Setup
+After building, create a `resources` folder in the project root directory and add some XML files:
+```bash
+mkdir resources
+# Add your XML test files to the resources folder
+# Modify the paths in example_service/example_service.cpp if necessary
+```
 
 ## Usage
-### Documenation
+### Documentation
 Execute `doxygen doxyfile` to generate documentation of the C++ Code.
-It can then be found at build/docs/index.html.
+It can then be found at `build/docs/index.html`.
 
 ### C++
 ```cpp
@@ -61,14 +97,14 @@ int main() {
 }
 ```
 
-For a more complete example, see example_service/example_service.cpp.
-To execute the C++ example use the following command:
-```bash
-./build/example_service/Release/example_service.exe
-```
+For a more complete example, see `example_service/example_service.cpp`.
+
+To execute the C++ example:
+- **Linux**: `./build/example_service/example_service`
+- **Windows**: `./build/example_service/Release/example_service.exe`
 
 ### Python
-Copy python/pht_hst.cp39-win_amd64.pyd (or similar) to your python directory, then use as follows:
+Copy the compiled Python module (`pht_hst.*.so` on Linux or `pht_hst.cp39-win_amd64.pyd` on Windows) to your Python directory, then use as follows:
 ```python
 import pht_hst
 tree = pht_hst.PyHST(pathValue.get(), False) #Set to True to use huffman encoding
@@ -80,3 +116,21 @@ To execute the Python GUI use the following commands:
 cd python
 python gui.py
 ```
+
+## Troubleshooting
+
+### Linux Build Issues
+- **Missing dependencies**: Ensure GCC/Clang and build essentials are installed:
+  ```bash
+  sudo apt-get install build-essential cmake python3-dev
+  ```
+- **Submodule errors**: If submodules fail to update, try:
+  ```bash
+  git submodule update --init --recursive --depth=1
+  ```
+- **Python extension build failures**: Install Python development headers:
+  ```bash
+  sudo apt-get install python3-dev
+  ```
+
+
