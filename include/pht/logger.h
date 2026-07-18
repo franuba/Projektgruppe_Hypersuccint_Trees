@@ -121,7 +121,9 @@ namespace pht {
             }
 
         private:
+            #ifdef _MSC_VER
             #pragma warning(disable:4251)
+            #endif
             std::stringstream content;
             LogLevel level;
             const std::string tag;
@@ -130,7 +132,9 @@ namespace pht {
             const std::string func;
             bool quiet;
             bool exists;
+            #ifdef _MSC_VER
             #pragma warning(default:4251)
+            #endif
 
             LogStream(LogLevel level, std::string  tag, std::string  file, uint32_t line, std::string  func, bool quiet, bool exists) : level(level), tag(std::move(tag)), file(std::move(file)), line(line), func(std::move(func)), quiet(quiet), exists(exists) {}
         };
@@ -181,13 +185,17 @@ namespace pht {
         class __declspec(dllexport) LoggerStatics {
             friend class Logger;
         private:
+            #ifdef _MSC_VER
             #pragma warning(disable:4251)
+            #endif
             LogLevel logLevel;
             Timer timer;
             std::regex unifyLinebreakRegex;
             std::unique_ptr<std::ostream> stdOutWrapper;
             std::streambuf* stdoutBuf;
+            #ifdef _MSC_VER
             #pragma warning(default:4251)
+            #endif
 
             LoggerStatics();
         };

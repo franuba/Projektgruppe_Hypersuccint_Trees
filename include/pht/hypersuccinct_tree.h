@@ -27,7 +27,9 @@ namespace pht {
      * It contains all information needed to query a single MiniTree.
      */
     struct __declspec(dllexport) MiniTree {
+        #ifdef _MSC_VER
         #pragma warning(disable:4251)
+        #endif
         std::vector<Bitvector> FIDs; ///MicroFIDs
         std::vector<succinct_bv::BitVector> FIDsSupport; ///Rank + Select for MicroFIDs
         std::vector<Bitvector> typeVectors; ///MicroTypeVectors
@@ -74,7 +76,9 @@ namespace pht {
         Bitvector miniDummyLeafRank; ///Leaf Rank of MiniTree Dummy
         std::vector<Bitvector> microRootLeafRanks; ///Leaf Ranks of MicroTree Roots + 1 EXCEPT AT INDEX 0: There it is the displaced Leaf Rank of the MiniTree
         std::vector<Bitvector> microExtendedLeafRanks; ///Special Leaf Ranks for displaced microTrees + 1
+        #ifdef _MSC_VER
         #pragma warning(default:4251)
+        #endif
     };
 
     /**
@@ -83,7 +87,9 @@ namespace pht {
      * It contains all fields necessary to satisfy the query's need for structural information
      */
     struct __declspec(dllexport) LookupTableEntry {
+        #ifdef _MSC_VER
         #pragma warning(disable:4251)
+        #endif
         Bitvector index; ///Index of the LookupTableEntry
         Bitvector bp; ///BP of the Entry. Empty if index is BP
         Bitvector ancestorMatrix;//Ancestor Matrix
@@ -98,7 +104,9 @@ namespace pht {
         std::vector<Bitvector> leftmost_leaf; ///Rightmost leaves for every node within MicroTree
         std::vector<Bitvector> rightmost_leaf; ///Leftmose leaves for every node within MicroTree
         std::vector<Bitvector> leafRank; ///Leaf Rank for every node within MicroTree + 1
+        #ifdef _MSC_VER
         #pragma warning(default:4251)
+        #endif
 
         /**
          * Creates new LookupTableEntry with an ID that is otherwise empty
@@ -413,7 +421,9 @@ namespace pht {
         HypersuccinctTree() = default;
         bool huffmanFlag = false;
         //sizes
+        #ifdef _MSC_VER
         #pragma warning(disable:4251)
+        #endif
         std::vector<bool> size;
         std::vector<bool> microSize;
         std::vector<bool> miniSize;
@@ -430,7 +440,9 @@ namespace pht {
         std::vector<Bitvector> miniDummys;
         //LookupTable
         std::vector<LookupTableEntry> lookupTable;
+        #ifdef _MSC_VER
         #pragma warning(default:4251)
+        #endif
 
         /*
          * Finds the direct Parent of the given Node, ignoring dummies

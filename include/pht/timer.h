@@ -6,11 +6,6 @@
 #include <chrono>
 #include <ostream>
 
-#ifdef _MSC_VER
-    #define EXPORT __declspec(dllexport)
-#else
-    #define EXPORT
-#endif
 
 //extern "C" {
     namespace pht {
@@ -29,7 +24,7 @@
         /**
          * This class implements a simple timer to measure time between two time point. 
          */
-        class EXPORT Timer {
+        class __declspec(dllexport) Timer {
         public:
             /**
              * Start the time measurement. 
@@ -59,10 +54,14 @@
             friend std::ostream &::operator<<(std::ostream &out, const Timer &timer);
 
         private:
+            #ifdef _MSC_VER
             #pragma warning(disable:4251)
+            #endif
             std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
             std::chrono::time_point<std::chrono::high_resolution_clock> stopTime = std::chrono::high_resolution_clock::now();
+            #ifdef _MSC_VER
             #pragma warning(default:4251)
+            #endif
         };
     }
 
