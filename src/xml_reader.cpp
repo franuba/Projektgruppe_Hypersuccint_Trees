@@ -1,11 +1,3 @@
-#ifdef _WIN32
-#include <direct.h>
-#define GETCWD _getcwd
-#else
-#include <unistd.h>
-#define GETCWD getcwd
-#endif
-
 #include <iostream>
 #include <filesystem>
 //#define PHT_TEST
@@ -70,22 +62,24 @@ std::shared_ptr<pht::UnorderedTree<std::string>> pht::XMLReader::read(const std:
 
 std::shared_ptr<pht::UnorderedTree<std::string>> pht::XMLReader::readByName(const std::string &name) {
 
-    char temp[256];
-    _getcwd( temp, 256); //der Programmpfad ist jetzt in 'temp' gespeichert
-    path myRoot(temp);
-    path directory = myRoot;
+    // Use std::filesystem::current_path() instead of the Windows-only
+    // _getcwd()/<direct.h> API, so this works on Linux/macOS as well.
+    path directory = current_path();
     while ((directory.stem() != "Projektgruppe_Hypersuccint_Trees" && directory.stem() != "ProjektSuccinctTrees") && directory.root_path() != directory.parent_path()){
         directory = directory.parent_path();
     }
 
+    // Use path's own separator handling instead of a hardcoded backslash,
+    // so the resulting path is portable across operating systems.
     directory /= "resources";
 
-
     std::string xml = ".xml";
+    path filePath = directory;
     if (!std::equal(xml.rbegin(), xml.rend(), name.rbegin())){
-        return read(directory.string() + name + xml);
+        filePath /= (name + xml);
+    } else {
+        filePath /= name;
     }
 
-    return read(directory.string() + name);
-
+    return read(filePath.string());
 }
