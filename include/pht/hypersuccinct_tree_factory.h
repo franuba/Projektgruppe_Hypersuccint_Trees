@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <mutex>
+#include <cmath>
 
 #include "logger.h"
 #include "huffman.h"
@@ -48,8 +49,8 @@ namespace pht {
             std::unique_ptr<HypersuccinctTree> hypersuccinctTree = std::unique_ptr<HypersuccinctTree>(new HypersuccinctTree());
             hypersuccinctTree->huffmanFlag = huffman;
 
-            uint32_t sizeMini = sizeMiniParam == 0 ? static_cast<uint32_t>(ceil(pow(log2(tree->getSize()), 2.0))) : sizeMiniParam;
-            uint32_t sizeMicro = sizeMicroParam == 0 ? static_cast<uint32_t>(ceil((log2(tree->getSize())) / 8.0)) : sizeMicroParam;
+            uint32_t sizeMini = sizeMiniParam == 0 ? static_cast<uint32_t>(ceil(pow(std::log2(tree->getSize()), 2.0))) : sizeMiniParam;
+            uint32_t sizeMicro = sizeMicroParam == 0 ? static_cast<uint32_t>(ceil((std::log2(tree->getSize())) / 8.0)) : sizeMicroParam;
 
             encodeAllSizesInHST(*hypersuccinctTree, tree->getSize(), sizeMini, sizeMicro);
 
@@ -322,7 +323,7 @@ namespace pht {
         template<class T> static std::tuple<std::vector<Bitvector>,std::vector<Bitvector>> create1_2_Interconnections(std::shared_ptr<UnorderedTree<T>> baseTree, std::vector<std::shared_ptr<UnorderedTree<T>>> subtrees, uint32_t size) {
             std::vector<Bitvector> FIDs;
             std::vector<Bitvector> typeVectors;
-            uint32_t dummySize = static_cast<uint32_t>(floor(log2(2*size+1)))+1;
+            uint32_t dummySize = static_cast<uint32_t>(floor(std::log2(2*size+1)))+1;
             std::vector<std::shared_ptr<Node<T>>> rootNodes = ListUtils::mapped<std::shared_ptr<UnorderedTree<T>>, std::shared_ptr<Node<T>>>(subtrees, [](std::shared_ptr<UnorderedTree<T>> x){return x -> getRoot();});
             std::vector<std::shared_ptr<Node<T>>> distinctRootNodes = ListUtils::distincted(rootNodes);
             std::vector<std::shared_ptr<Node<T>>> firstChildren;
@@ -378,7 +379,7 @@ namespace pht {
          */
         template<class T> static std::vector<Bitvector> createDummyInterconnections(std::shared_ptr<UnorderedTree<T>> baseTree, std::vector<std::shared_ptr<UnorderedTree<T>>> subtrees, uint32_t size) {
             std::vector<Bitvector> dummys;
-            uint32_t dummySize = static_cast<uint32_t>(floor(log2(2*size+1)))+1;
+            uint32_t dummySize = static_cast<uint32_t>(floor(std::log2(2*size+1)))+1;
             //Dummy Nodes
             for(std::shared_ptr<UnorderedTree<T>> fmMicroTree : subtrees) {
                 bool hadDummy = false;
@@ -517,7 +518,7 @@ namespace pht {
                 handleMiniDummyInMicroTree(miniTree, fmMiniTree, fmMicroTree, fmMicroTrees);
 
                 //MicroDummyPointers
-                uint32_t dummySize = static_cast<uint32_t>(floor(log2(2*sizeMicro+1)))+1;
+                uint32_t dummySize = static_cast<uint32_t>(floor(std::log2(2*sizeMicro+1)))+1;
                 if(fmMicroTree->hasDummy()) {
                     std::shared_ptr<Node<T>> dummyPoint = fmMiniTree->getDirectDescendants(fmMicroTree->getDummy()).at(0);
                     uint32_t microTreePointer = dummyPoint->getMicroTree();

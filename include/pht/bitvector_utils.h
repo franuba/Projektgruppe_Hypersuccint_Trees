@@ -8,6 +8,7 @@
 
 #include "unordered_tree.h"
 #include "list_utils.h"
+#include "pht_export.h"
 
 
 namespace pht{
@@ -17,10 +18,10 @@ namespace pht{
      * which is not implemented or very verbose in the standard library.
      * Functionality concerns specific encodings for the implemented Farzan Munro Algorithm.
      */
-    class __declspec(dllexport) BitvectorUtils {
+    class PHT_EXPORT BitvectorUtils {
         
     private:
-        struct __declspec(dllexport) HuffmanComparator {
+        struct PHT_EXPORT HuffmanComparator {
             bool operator()(const Bitvector &a, const Bitvector &b)const;
         };
 

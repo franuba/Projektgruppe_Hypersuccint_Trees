@@ -5,7 +5,7 @@
 #include "pht/hypersuccinct_tree.h"
 #include "pht/logger.h"
 #include <iomanip>
-
+#include <cmath>
 
 using namespace pht;
 

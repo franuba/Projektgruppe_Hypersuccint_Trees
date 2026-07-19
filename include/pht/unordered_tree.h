@@ -14,6 +14,7 @@
 #include "list_utils.h"
 #include "precomputed_function.h"
 #include "cached_function.h"
+#include <list>
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec(dllexport)

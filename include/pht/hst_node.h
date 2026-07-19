@@ -6,6 +6,8 @@
 #include <chrono>
 #include <ostream>
 
+#include "pht_export.h"
+
 namespace pht {
     class HstNode;
 }
@@ -22,7 +24,7 @@ namespace pht {
     /**
      * This class defines a combination of three IDs to NOT uniquely identify nodes in a Hypersuccinct tree.
      */
-    class __declspec(dllexport) HstNode {
+    class PHT_EXPORT HstNode {
     public:
         /**
          * Construct a new Hst Node object with IDs 0,0,0. 

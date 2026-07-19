@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 #include <algorithm>
+#include <cstdint>
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec(dllexport)

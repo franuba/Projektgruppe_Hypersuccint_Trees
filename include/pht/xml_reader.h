@@ -2,6 +2,7 @@
 #define PROJECTGROUP_HYPERSUCCINCT_TREES_XML_READER_H_
 
 #include "unordered_tree.h"
+#include "pht_export.h"
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec(dllexport)
@@ -13,7 +14,7 @@ namespace pht {
     /**
      * This class implements the reading and conversion of XML-File into UnorderedTree objects. 
      */
-    class __declspec(dllexport) XMLReader {
+    class PHT_EXPORT XMLReader {
     public:
         /**
          * Read and convert the given file into an UnorderedTree. 

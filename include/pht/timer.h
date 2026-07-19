@@ -6,6 +6,7 @@
 #include <chrono>
 #include <ostream>
 
+#include "pht_export.h"
 
 //extern "C" {
     namespace pht {
@@ -24,7 +25,7 @@
         /**
          * This class implements a simple timer to measure time between two time point. 
          */
-        class __declspec(dllexport) Timer {
+        class PHT_EXPORT Timer {
         public:
             /**
              * Start the time measurement. 

@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "pht/timer.h"
+#include "pht/pht_export.h"
 
 #ifdef PHT_LOGGER_QUIET
 #define PHT_LOGGER_DEBUG(tag)   pht::Logger::log(pht::Logger::LogLevel::PHT_DEBUG,   tag, __FILE__, __LINE__, __func__,true)
@@ -34,7 +35,7 @@ namespace pht {
      * Example usage:
      * PHT_LOGGER_INFO("Test") << "This is a test" << pht::Logger::endl();
      */
-    class __declspec(dllexport) Logger {
+    class PHT_EXPORT Logger {
         friend class LogStream;
 
     public:
@@ -53,7 +54,7 @@ namespace pht {
          * DO NOT use/instantiate/... this class expect for their standard use in Logger. 
          */
         //TODO Change to better process of stream-printing messages. 
-        class __declspec(dllexport) LogStream {
+        class PHT_EXPORT LogStream {
             friend class Logger;
 
         public:
@@ -105,18 +106,6 @@ namespace pht {
              */
             template<class T> LogStream& operator<<(const T& value) {
                 content << value;
-                return *this;
-            }
-
-            /**
-             * Template specialization for backward-compatibility, DO NOT USE.
-             * @param value The value to capture. 
-             * @return LogStream& This stream, for call-chaining. 
-             */
-            template<> [[deprecated]] LogStream& operator<<(void* const& value) {
-                if(value != Logger::endl()) {
-                    content << value;
-                }
                 return *this;
             }
 
@@ -182,7 +171,7 @@ namespace pht {
         [[deprecated]] static void* endl();
 
     private:
-        class __declspec(dllexport) LoggerStatics {
+        class PHT_EXPORT LoggerStatics {
             friend class Logger;
         private:
             #ifdef _MSC_VER

@@ -11,6 +11,7 @@
 #include "bitvector_utils.h"
 #include "bit_vector.h"
 #include "hst_node.h"
+#include "pht_export.h"
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec(dllexport)
@@ -26,7 +27,7 @@ namespace pht {
      * MiniTree represents MiniTree of the HypersuccinctTree
      * It contains all information needed to query a single MiniTree.
      */
-    struct __declspec(dllexport) MiniTree {
+    struct PHT_EXPORT MiniTree {
         #ifdef _MSC_VER
         #pragma warning(disable:4251)
         #endif
@@ -86,7 +87,7 @@ namespace pht {
      * It is indexed by the MicroTrees Balanced Parenthesis form (if no encoding is chosen) or by their Huffman code (if Huffman encoding is chosen)
      * It contains all fields necessary to satisfy the query's need for structural information
      */
-    struct __declspec(dllexport) LookupTableEntry {
+    struct PHT_EXPORT LookupTableEntry {
         #ifdef _MSC_VER
         #pragma warning(disable:4251)
         #endif
@@ -148,7 +149,7 @@ namespace pht {
      * Get functions for all Bitvectors
      * Queries as specified in 'A Uniform Paradigm to Succinctly Encode Various Families of Trees' by Arash Farzan; J. Ian Munro
      */
-    class __declspec(dllexport) HypersuccinctTree {
+    class PHT_EXPORT HypersuccinctTree {
         friend class HypersuccinctTreeFactory;
     public:
 

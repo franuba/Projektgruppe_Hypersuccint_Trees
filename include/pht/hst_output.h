@@ -2,6 +2,7 @@
 #define PROJEKTSUCCINCTTREES_HST_OUTPUT_H
 
 #include "pht/hypersuccinct_tree.h"
+#include "pht/pht_export.h"
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec(dllexport)
@@ -11,13 +12,13 @@
 
 using namespace std;
 
-extern "C" void __declspec(dllexport) hello();
+extern "C" void PHT_EXPORT hello();
 
 namespace pht {
     /**
      * This class provides various output-methods to debug/check contents of HypersuccinctTrees. 
      */
-    class __declspec(dllexport) HypersuccinctTreeOutput {
+    class PHT_EXPORT HypersuccinctTreeOutput {
 
     public:
         /**

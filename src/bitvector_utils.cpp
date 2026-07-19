@@ -3,6 +3,7 @@
 //
 
 #include <pht/bitvector_utils.h>
+#include <cmath>
 
 using namespace pht;
 
@@ -33,7 +34,7 @@ Bitvector BitvectorUtils::encodeNumberReturn(uint32_t num) {
         res.push_back(false);
         return res;
     }
-    uint32_t size = static_cast<uint32_t>(floor(log2(num))) + 1;
+    uint32_t size = static_cast<uint32_t>(floor(std::log2(num))) + 1;
     for(; i < size; i++) {
         res.push_back((num>>(size-1-i))&1);
     }
@@ -111,7 +112,7 @@ uint32_t BitvectorUtils::encodeBinary(std::insert_iterator<Bitvector>& iterator,
         iterator = false;
         return 1;
     }
-    uint32_t size = static_cast<uint32_t>(floor(log2(num))) + 1;
+    uint32_t size = static_cast<uint32_t>(floor(std::log2(num))) + 1;
     for(; i < size; i++) {
         iterator = ((num>>(size-1-i))&1);
     }
@@ -120,7 +121,7 @@ uint32_t BitvectorUtils::encodeBinary(std::insert_iterator<Bitvector>& iterator,
 
 uint32_t BitvectorUtils::encodeEliasGamma(std::insert_iterator<Bitvector>& iterator, uint32_t num) {
     uint32_t count = 0;
-    auto logSize = static_cast<uint32_t>(floor((log2(num))));
+    auto logSize = static_cast<uint32_t>(floor((std::log2(num))));
     for(uint32_t i = 0; i < logSize; i++, count++) {
         iterator = false;
     }
