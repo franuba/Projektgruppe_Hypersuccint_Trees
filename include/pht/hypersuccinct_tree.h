@@ -13,12 +13,6 @@
 #include "hst_node.h"
 #include "pht_export.h"
 
-#ifdef DLL_EXPORTS
-#define DLL_API __declspec(dllexport)
-#else
-#define DLL_API __declspec(dllimport)
-#endif
-
 namespace pht {
     typedef std::vector<bool> Bitvector;
     //node identification by: Minitree, MicroTree, NodeInMicroTree
@@ -463,5 +457,4 @@ namespace pht {
     };
 }
 
-#undef DLL_API
 #endif //PROJEKTSUCCINCTTREES_HYPERSUCCINCT_TREE_H

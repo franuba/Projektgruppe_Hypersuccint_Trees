@@ -30,7 +30,7 @@ namespace pht{
         /**
          * This enum defines possible encodings for numbers which BitvectorUtils is able to encode into.
          */
-        enum class /*__declspec(dllexport)*/ NumberEncoding {
+        enum class NumberEncoding {
             BINARY, ///A normal binary encoding
             ELIAS_GAMMA ///Elias-Gamma encoding, consisting of the length of the size of the entry - 1 in unary (as zeros) and the size of the entry in binary + the entry
         };
@@ -104,5 +104,4 @@ namespace pht{
     };
 }
 
-#undef DLL_API
 #endif //PROJEKTSUCCINCTTREES_BITVECTOR_UTILS_H

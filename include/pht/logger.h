@@ -42,7 +42,7 @@ namespace pht {
         /**
          * This enum defines the different LogLevels. More important log-levels will supress lower-level messages if used as filter. 
          */
-        enum class /*__declspec(dllexport)*/ LogLevel {
+        enum class LogLevel {
             PHT_DEBUG = 0, PHT_INFO = 1, PHT_WARNING = 2, PHT_ERROR = 3, PHT_FATAL = 4
         };
 
@@ -106,6 +106,18 @@ namespace pht {
              */
             template<class T> LogStream& operator<<(const T& value) {
                 content << value;
+                return *this;
+            }
+
+            /**
+             * Template specialization for backward-compatibility, DO NOT USE.
+             * @param value The value to capture. 
+             * @return LogStream& This stream, for call-chaining. 
+             */
+            template<> [[deprecated]] LogStream& operator<<(void* const& value) {
+                if(value != Logger::endl()) {
+                    content << value;
+                }
                 return *this;
             }
 
@@ -195,5 +207,4 @@ namespace pht {
     };
 }
 
-#undef DLL_API
 #endif//PROJECTGROUP_HYPERSUCCINCT_TREES_LOGGER_H_
