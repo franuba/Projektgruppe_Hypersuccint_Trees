@@ -66,7 +66,7 @@ inline char* fast_atof_move(char* c, float& out)
 		{
 			++c;
 			float exp = (float)strtol(c, &t, 10);
-			f *= (float)pow(10.0f, exp);
+			f *= (float)std::pow(10.0f, exp);
 			c = t;
 		}
 	}

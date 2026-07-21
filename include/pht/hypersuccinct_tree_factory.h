@@ -49,8 +49,8 @@ namespace pht {
             std::unique_ptr<HypersuccinctTree> hypersuccinctTree = std::unique_ptr<HypersuccinctTree>(new HypersuccinctTree());
             hypersuccinctTree->huffmanFlag = huffman;
 
-            uint32_t sizeMini = sizeMiniParam == 0 ? static_cast<uint32_t>(ceil(pow(std::log2(tree->getSize()), 2.0))) : sizeMiniParam;
-            uint32_t sizeMicro = sizeMicroParam == 0 ? static_cast<uint32_t>(ceil((std::log2(tree->getSize())) / 8.0)) : sizeMicroParam;
+            uint32_t sizeMini = sizeMiniParam == 0 ? static_cast<uint32_t>(std::ceil(std::pow(std::log2(tree->getSize()), 2.0))) : sizeMiniParam;
+            uint32_t sizeMicro = sizeMicroParam == 0 ? static_cast<uint32_t>(std::ceil((std::log2(tree->getSize())) / 8.0)) : sizeMicroParam;
 
             encodeAllSizesInHST(*hypersuccinctTree, tree->getSize(), sizeMini, sizeMicro);
 

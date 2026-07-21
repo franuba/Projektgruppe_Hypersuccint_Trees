@@ -18,7 +18,7 @@ std::shared_ptr<pht::UnorderedTree<std::string>> createExampleTree();
 std::string formatByteSize(uint64_t bytes) {
     uint32_t magnitude = (static_cast<uint32_t>(floor(log10(bytes)))-(static_cast<uint32_t>(floor(log10(bytes)))%3));
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(bytes>=1000?2:0) << static_cast<double>(bytes)/pow(10, magnitude);
+    stream << std::fixed << std::setprecision(bytes>=1000?2:0) << static_cast<double>(bytes)/std::pow(10, magnitude);
     switch(magnitude) {
         case 0:                 break;
         case 3:  stream << "k"; break;
