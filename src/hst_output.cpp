@@ -8,144 +8,144 @@ using namespace pht;
 using namespace std;
 
 void HypersuccinctTreeOutput::printTree(HypersuccinctTree &tree) {
-    PHT_LOGGER_INFO("HST_OUT") << "Hypersuccinct Tree:" << "\n" << pht::Logger::endl();
-    PHT_LOGGER_INFO("HST_OUT") << "IsHuffman:   " << pht::Logger::endl();
-    PHT_LOGGER_INFO("HST_OUT") << tree.isHuffman() << "\n" << pht::Logger::endl();
-    PHT_LOGGER_INFO("HST_OUT") << "TreeSize:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "Hypersuccinct Tree:" << "\n";
+    PHT_LOGGER_INFO("HST_OUT") << "IsHuffman:   ";
+    PHT_LOGGER_INFO("HST_OUT") << tree.isHuffman() << "\n";
+    PHT_LOGGER_INFO("HST_OUT") << "TreeSize:  ";
     printBitvector(tree.getSize());
-    PHT_LOGGER_INFO("HST_OUT") << "MiniSize:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "MiniSize:  ";
     printBitvector(tree.getMiniSize());
-    PHT_LOGGER_INFO("HST_OUT") << "MicroSize:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "MicroSize:  ";
     printBitvector(tree.getMicroSize());
-    PHT_LOGGER_INFO("HST_OUT") << "\n" << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "\n";
 
-    PHT_LOGGER_INFO("HST_OUT") << "Amount of MiniTrees: " << tree.getMiniTrees().size() << "\n" << pht::Logger::endl();
-    PHT_LOGGER_INFO("HST_OUT") << "MiniFIDs:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "Amount of MiniTrees: " << tree.getMiniTrees().size() << "\n";
+    PHT_LOGGER_INFO("HST_OUT") << "MiniFIDs:  ";
     printBitvector(tree.getMiniFIDs());
-    PHT_LOGGER_INFO("HST_OUT") << "FID Top Trees:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "FID Top Trees:  ";
     printBitvector(tree.getMiniFIDs());
-    PHT_LOGGER_INFO("HST_OUT") << "FID Low Trees:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "FID Low Trees:  ";
     printBitvector(tree.getMiniFIDs());
-    PHT_LOGGER_INFO("HST_OUT") << "MiniTypeVectors:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "MiniTypeVectors:  ";
     printBitvector(tree.getMiniTypeVectors());
-    PHT_LOGGER_INFO("HST_OUT") << "MiniDummys:  " << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << "MiniDummys:  ";
     printBitvector(tree.getMiniDummys());
 
     pht::MiniTree miniTree = tree.getMiniTree(0);
     for(int index = 0 ; index < tree.getMiniTrees().size(); index++) {
-        PHT_LOGGER_INFO("HST_OUT") << "MicroTreesinMiniTree" << index << ":  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MicroTreesinMiniTree" << index << ":  ";
         printBitvector(tree.getMiniTree(index).microTrees);
-        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeFIDs:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeFIDs:  ";
         printBitvector(tree.getMiniTree(index).FIDs);
-        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeTypeVectors:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeTypeVectors:  ";
         printBitvector(tree.getMiniTree(index).typeVectors);
-        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeDummys:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MicroTreeDummys:  ";
         printBitvector(tree.getMiniTree(index).dummys);
 
-        PHT_LOGGER_INFO("HST_OUT") << "Mini Top FID Index:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Mini Top FID Index:  ";
         printBitvector(tree.getMiniTree(index).miniTopFIDIndex);
-        PHT_LOGGER_INFO("HST_OUT") << "Mini Low FID Index:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Mini Low FID Index:  ";
         printBitvector(tree.getMiniTree(index).miniLowFIDIndex);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro Top FID Indices:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro Top FID Indices:  ";
         printBitvector(tree.getMiniTree(index).microTopFIDIndices);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro Low FID Indices:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro Low FID Indices:  ";
         printBitvector(tree.getMiniTree(index).microLowFIDIndices);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro FID Top Trees:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro FID Top Trees:  ";
         printBitvector(tree.getMiniTree(index).microFIDTopTrees);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro FID Low Trees:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro FID Low Trees:  ";
         printBitvector(tree.getMiniTree(index).microFIDLowTrees);
 
-        PHT_LOGGER_INFO("HST_OUT") << "RootAncestors:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "RootAncestors:  ";
         printBitvector(tree.getMiniTree(index).rootAncestors);
-        PHT_LOGGER_INFO("HST_OUT") << "DummyAncestors:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "DummyAncestors:  ";
         printBitvector(tree.getMiniTree(index).dummyAncestors);
-        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyTree:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyTree:  ";
         printBitvector(tree.getMiniTree(index).miniDummyTree);
-        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyIndex:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyIndex:  ";
         printBitvector(tree.getMiniTree(index).miniDummyIndex);
-        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyPointer:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MiniDummyPointer:  ";
         printBitvector(tree.getMiniTree(index).miniDummyPointer);
-        PHT_LOGGER_INFO("HST_OUT") << "MicroDummyPointers:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "MicroDummyPointers:  ";
         printBitvector(tree.getMiniTree(index).microDummyPointers);
 
-        PHT_LOGGER_INFO("HST_OUT") << "Mini Child Rankd:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Mini Child Rankd:  ";
         printBitvector(tree.getMiniTree(index).miniChildRank);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro Child Ranks:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro Child Ranks:  ";
         printBitvector(tree.getMiniTree(index).microChildRanks);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro extended Child Ranks:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro extended Child Ranks:  ";
         printBitvector(tree.getMiniTree(index).microExtendedChildRanks);
 
-        PHT_LOGGER_INFO("HST_OUT") << "Mini Parent Pointers:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Mini Parent Pointers:  ";
         printBitvector(tree.getMiniTree(index).miniParent);
-        PHT_LOGGER_INFO("HST_OUT") << "Micro Parent Pointers:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Micro Parent Pointers:  ";
         printBitvector(tree.getMiniTree(index).microParents);
 
-        PHT_LOGGER_INFO("HST_OUT") << "Subtree Size at MiniTree Root:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Subtree Size at MiniTree Root:  ";
         printBitvector(tree.getMiniTree(index).subTree);
-        PHT_LOGGER_INFO("HST_OUT") << "SubTreeSize at MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "SubTreeSize at MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).microSubTrees);
-        PHT_LOGGER_INFO("HST_OUT") << "Depth at MiniTree Root:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Depth at MiniTree Root:  ";
         printBitvector(tree.getMiniTree(index).miniDepth);
-        PHT_LOGGER_INFO("HST_OUT") << "Height at MiniTree Root:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Height at MiniTree Root:  ";
         printBitvector(tree.getMiniTree(index).miniHeight);
-        PHT_LOGGER_INFO("HST_OUT") << "Depth at MiniTree Dummy:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Depth at MiniTree Dummy:  ";
         printBitvector(tree.getMiniTree(index).miniDummyDepth);
-        PHT_LOGGER_INFO("HST_OUT") << "Height at MiniTree Dummy:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Height at MiniTree Dummy:  ";
         printBitvector(tree.getMiniTree(index).miniDummyHeight);
-        PHT_LOGGER_INFO("HST_OUT") << "Depth at MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Depth at MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).rootDepths);
-        PHT_LOGGER_INFO("HST_OUT") << "Height at MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Height at MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).rootHeights);
-        PHT_LOGGER_INFO("HST_OUT") << "Leaf Size at MiniTree Root:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leaf Size at MiniTree Root:  ";
         printBitvector(tree.getMiniTree(index).miniLeaves);
-        PHT_LOGGER_INFO("HST_OUT") << "Leaf Size at MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leaf Size at MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).microLeaves);
-        PHT_LOGGER_INFO("HST_OUT") << "Leftmost MiniTree:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leftmost MiniTree:  ";
         printBitvector(tree.getMiniTree(index).miniTreeLeftmostLeafPointer);
-        PHT_LOGGER_INFO("HST_OUT") << "Rightmost MiniTree:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Rightmost MiniTree:  ";
         printBitvector(tree.getMiniTree(index).miniTreeRightmostLeafPointer);
-        PHT_LOGGER_INFO("HST_OUT") << "Leftmost MicroTree within MiniTree:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leftmost MicroTree within MiniTree:  ";
         printBitvector(tree.getMiniTree(index).microTreeLeftmostLeafPointers);
-        PHT_LOGGER_INFO("HST_OUT") << "Rightmost MicroTree within MiniTree:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Rightmost MicroTree within MiniTree:  ";
         printBitvector(tree.getMiniTree(index).microTreeRightmostLeafPointers);
-        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MiniTree Root:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MiniTree Root:  ";
         printBitvector(tree.getMiniTree(index).miniRootLeafRank);
-        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MiniTree Dummy:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MiniTree Dummy:  ";
         printBitvector(tree.getMiniTree(index).miniDummyLeafRank);
-        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "LeafRank at MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).microRootLeafRanks);
-        PHT_LOGGER_INFO("HST_OUT") << "Extended Leaf Rank of MicroTree Roots:  " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Extended Leaf Rank of MicroTree Roots:  ";
         printBitvector(tree.getMiniTree(index).microExtendedLeafRanks);
-        PHT_LOGGER_INFO("HST_OUT") << "\n" << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "\n";
     }
     for(uint32_t index = 0; index < tree.getLookupTable().size(); index++) {
-        PHT_LOGGER_INFO("HST_OUT") << "LookupTableIndex:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "LookupTableIndex:   ";
         printBitvector(tree.getLookupTableEntry(index).index);
-        PHT_LOGGER_INFO("HST_OUT")<< "BP for Huffman:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT")<< "BP for Huffman:   ";
         printBitvector(tree.getLookupTableEntry(index).bp);
-        PHT_LOGGER_INFO("HST_OUT") << "AncestorMap:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "AncestorMap:   ";
         printBitvector(tree.getLookupTableEntry(index).ancestorMatrix);
-        PHT_LOGGER_INFO("HST_OUT") << "ChildMap:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "ChildMap:   ";
         printBitvector(tree.getLookupTableEntry(index).childMatrix);
-        PHT_LOGGER_INFO("HST_OUT") << "ChildRanks:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "ChildRanks:   ";
         printBitvector(tree.getLookupTableEntry(index).childRanks);
-        PHT_LOGGER_INFO("HST_OUT") << "Parent Pointers:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Parent Pointers:   ";
         printBitvector(tree.getLookupTableEntry(index).parentPointers);
-        PHT_LOGGER_INFO("HST_OUT") << "Degrees:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Degrees:   ";
         printBitvector(tree.getLookupTableEntry(index).degree);
-        PHT_LOGGER_INFO("HST_OUT") << "Subtrees:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Subtrees:   ";
         printBitvector(tree.getLookupTableEntry(index).subTrees);
-        PHT_LOGGER_INFO("HST_OUT") << "Depths:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Depths:   ";
         printBitvector(tree.getLookupTableEntry(index).nodeDepths);
-        PHT_LOGGER_INFO("HST_OUT") << "Heights:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Heights:   ";
         printBitvector(tree.getLookupTableEntry(index).nodeHeights);
-        PHT_LOGGER_INFO("HST_OUT") << "Leaf Sizes:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leaf Sizes:   ";
         printBitvector(tree.getLookupTableEntry(index).leaves);
-        PHT_LOGGER_INFO("HST_OUT") << "Leftmost Leaves:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leftmost Leaves:   ";
         printBitvector(tree.getLookupTableEntry(index).leftmost_leaf);
-        PHT_LOGGER_INFO("HST_OUT") << "Rightmost Leaves:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Rightmost Leaves:   ";
         printBitvector(tree.getLookupTableEntry(index).rightmost_leaf);
-        PHT_LOGGER_INFO("HST_OUT") << "Leaf Ranks:   " << pht::Logger::endl();
+        PHT_LOGGER_INFO("HST_OUT") << "Leaf Ranks:   ";
         printBitvector(tree.getLookupTableEntry(index).leafRank);
     }
 }
@@ -155,7 +155,7 @@ void HypersuccinctTreeOutput::printBitvector(const vector<bool>& bitvector) {
     for(bool bit: bitvector) {
         ss << bit;
     }
-    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n" << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n";
 }
 
 void HypersuccinctTreeOutput::printBitvector(const vector<vector<bool>> &bitvector) {
@@ -166,7 +166,7 @@ void HypersuccinctTreeOutput::printBitvector(const vector<vector<bool>> &bitvect
         }
         ss << "  ";
     }
-    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n" << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n";
 }
 
 void HypersuccinctTreeOutput::printBitvector(const vector<vector<vector<bool>>> &bitvector) {
@@ -180,7 +180,7 @@ void HypersuccinctTreeOutput::printBitvector(const vector<vector<vector<bool>>> 
         }
         ss << ";  ";
     }
-    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n" << pht::Logger::endl();
+    PHT_LOGGER_INFO("HST_OUT") << ss.str() << "\n";
 }
 
 

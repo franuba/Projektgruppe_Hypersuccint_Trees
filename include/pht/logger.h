@@ -33,7 +33,7 @@ namespace pht {
     /**
      * This class allows the printing of neatly formated, information-enriched log messages. 
      * Example usage:
-     * PHT_LOGGER_INFO("Test") << "This is a test" << pht::Logger::endl();
+     * PHT_LOGGER_INFO("Test") << "This is a test";
      */
     class PHT_EXPORT Logger {
         friend class LogStream;
@@ -98,7 +98,7 @@ namespace pht {
             }
 
             /**
-             * Append a value to the current message. Must be terminated with pht::Logger::endl() to be printed. 
+             * Append a value to the current message.
              * This method will fail if this stream is not the most current, i.e. another logging call was made before this on was finished or this stream was already printed. 
              * @tparam T A printable type. 
              * @param value The value to print. 
@@ -106,18 +106,6 @@ namespace pht {
              */
             template<class T> LogStream& operator<<(const T& value) {
                 content << value;
-                return *this;
-            }
-
-            /**
-             * Template specialization for backward-compatibility, DO NOT USE.
-             * @param value The value to capture. 
-             * @return LogStream& This stream, for call-chaining. 
-             */
-            template<> [[deprecated]] LogStream& operator<<(void* const& value) {
-                if(value != Logger::endl()) {
-                    content << value;
-                }
                 return *this;
             }
 
@@ -173,14 +161,6 @@ namespace pht {
          * @param enabled The new state of the standard output.
          */
         static void setStdOutEnabled(bool enabled);
-
-        /**
-         * Used to end logging messages. 
-         * Must be appended to every message to print it. 
-         * DEPRECATED, DO NOT USE ANYMORE, it is not necessary!
-         * @return void* A marker value to end a log-stream and print its value. 
-         */
-        [[deprecated]] static void* endl();
 
     private:
         class PHT_EXPORT LoggerStatics {

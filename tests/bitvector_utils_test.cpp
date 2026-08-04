@@ -12,12 +12,12 @@
 TEST(BitvectorUtilsTest, stupidTest) {
     std::vector<bool> b = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0};
     std::vector<bool> b2 = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1};
-    PHT_LOGGER_DEBUG("Test") << b.size() << "\n" << pht::Logger::endl();
+    PHT_LOGGER_DEBUG("Test") << b.size() << "\n";
     uint32_t c = pht::BitvectorUtils::decodeNumber(b,pht::BitvectorUtils::NumberEncoding::BINARY);
     uint32_t c2 = pht::BitvectorUtils::decodeNumber(b2,pht::BitvectorUtils::NumberEncoding::BINARY);
-    PHT_LOGGER_DEBUG("Test") << c << "\n" << pht::Logger::endl();
-    PHT_LOGGER_DEBUG("Test") << c2 << "\n" << pht::Logger::endl();
-    PHT_LOGGER_DEBUG("Test") << UINT32_MAX << "\n" << pht::Logger::endl();
+    PHT_LOGGER_DEBUG("Test") << c << "\n";
+    PHT_LOGGER_DEBUG("Test") << c2 << "\n";
+    PHT_LOGGER_DEBUG("Test") << UINT32_MAX << "\n";
 }
 
 TEST(BitvectorUtilsTest, encodeBinaryTest) {

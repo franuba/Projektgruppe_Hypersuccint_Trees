@@ -8,11 +8,6 @@
 #define PHT_LOGGER_MSG_OFFSET 22+PHT_LOGGER_TAG_WIDTH
 #define PHT_LOGGER_COLORIZE
 
-void* pht::Logger::endl() {
-    static std::unique_ptr<uint8_t> value = std::make_unique<uint8_t>();
-    return reinterpret_cast<void*>(value.get());
-}
-
 pht::Logger::LogStream pht::Logger::log(pht::Logger::LogLevel level, const std::string& tag, const std::string& file, uint32_t line, const std::string& func, bool quiet) {
     return LogStream(level, tag, file, line, func, quiet, true);
 }

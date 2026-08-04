@@ -104,12 +104,12 @@ namespace pht {
                 queue.push(newTree);
             }
 
-            //PHT_LOGGER_DEBUG("Huffmann") << *queue.top() << std::endl << pht::Logger::endl();
+            //PHT_LOGGER_DEBUG("Huffmann") << *queue.top() << std::endl;
 
             //Fill huffman table
             std::map<T,std::vector<bool>> table;
             fillTable(queue.top(), queue.top()->getRoot(), table, std::vector<bool>());
-            //PHT_LOGGER_DEBUG("Huffmann") << table << std::endl << pht::Logger::endl();
+            //PHT_LOGGER_DEBUG("Huffmann") << table << std::endl;
             return table;
         }
 
