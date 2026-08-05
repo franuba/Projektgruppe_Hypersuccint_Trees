@@ -30,7 +30,7 @@ protected:
      * Factory
      * WriteToFile / ReadFromFile
      */
-    std::vector<std::string> fileNames = {"TreeNath3.xml"};
+    std::vector<std::string> fileNames = {"treeNath3.xml"};
             //{"DBLP.xml"};
             //{"TreeNath.xml","TreeNath2.xml","TreeNath3.xml","TreeNath4.xml","TreeNath5.xml"};
     std::string resultFileName = "testResultsFactoryOptimizedPrecompCheckARR.csv";

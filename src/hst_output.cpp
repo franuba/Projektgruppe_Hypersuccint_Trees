@@ -305,7 +305,7 @@ void HypersuccinctTreeOutput::writeHuffmanToFile(HypersuccinctTree &tree, const 
 
 HypersuccinctTree HypersuccinctTreeOutput::readFromFile(const string& path) {
     std::ifstream file;
-    file.open("tree.txt", std::ifstream::binary);
+    file.open(path, std::ifstream::binary);
     Bitvector fileBitvector = readBitvectorFromFile(file);
     file.close();
     //funktion in Factory:
@@ -364,16 +364,19 @@ void HypersuccinctTreeOutput::writeBitvectorToFile(std::ofstream &file, Bitvecto
         file.write(reinterpret_cast<char*>(&num), 1);
         bytes++;
     }
-    tmp.clear();
-    for(uint32_t i = 0; i < bitvector.size()%8; i++) {
-        tmp.push_back(bitvector.at(bytes+i));
+    uint32_t remainder = bitvector.size() % 8;
+    if (remainder > 0) {
+        tmp.clear();
+        for(uint32_t i = 0; i < remainder; i++) {
+            tmp.push_back(bitvector.at(bytes*8+i));
+        }
+        for(uint32_t i = 0; i < 8 - remainder; i++) {
+            tmp.push_back(false);
+        }
+        auto iter = tmp.cbegin();
+        uint32_t num = pht::BitvectorUtils::decodeNumber(iter, tmp.cend(),BitvectorUtils::NumberEncoding::BINARY);
+        file.write(reinterpret_cast<char*>(&num), 1);
     }
-    for(uint32_t i = 0; i < 8-(bitvector.size()%8); i++) {
-        tmp.push_back(false);
-    }
-    auto iter = tmp.cbegin();
-    uint32_t num = pht::BitvectorUtils::decodeNumber(iter, tmp.cend(),BitvectorUtils::NumberEncoding::BINARY);
-    file.write(reinterpret_cast<char*>(&num), 1);
 }
 
 Bitvector HypersuccinctTreeOutput::readBitvectorFromFile(std::ifstream &file) {

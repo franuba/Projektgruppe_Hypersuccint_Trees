@@ -16,7 +16,7 @@
 
 class HypersuccinctTreeTest : public ::testing::Test {
 protected:
-    std::shared_ptr<pht::UnorderedTree<std::string>> treeNathX  = pht::XMLReader::readByName("treeNathX.xml");
+    std::shared_ptr<pht::UnorderedTree<std::string>> treeNathX  = pht::XMLReader::readByName("TreeNathX.xml");
     pht::HypersuccinctTree hyperNathX = *pht::HypersuccinctTreeFactory::create(treeNathX, false, 12, 4);
     std::shared_ptr<pht::UnorderedTree<std::string>> treeNath  = pht::XMLReader::readByName("treeNath.xml");
     pht::HypersuccinctTree hyperNath = *pht::HypersuccinctTreeFactory::create(treeNath, false, 12, 4);

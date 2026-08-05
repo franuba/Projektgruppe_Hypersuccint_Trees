@@ -62,10 +62,10 @@ std::shared_ptr<pht::UnorderedTree<std::string>> pht::XMLReader::read(const std:
 
 std::shared_ptr<pht::UnorderedTree<std::string>> pht::XMLReader::readByName(const std::string &name) {
 
-    // Use std::filesystem::current_path() instead of the Windows-only
-    // _getcwd()/<direct.h> API, so this works on Linux/macOS as well.
+    // Walk up from the current directory to find the repository root
+    // by looking for a .git directory (works regardless of clone name).
     path directory = current_path();
-    while ((directory.stem() != "Projektgruppe_Hypersuccint_Trees" && directory.stem() != "ProjektSuccinctTrees") && directory.root_path() != directory.parent_path()){
+    while (!exists(directory / ".git") && directory.root_path() != directory.parent_path()){
         directory = directory.parent_path();
     }
 
