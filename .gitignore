@@ -16,4 +16,4 @@ venv/
 /resources/DBLP.xml
 
 /python/build/
-/python/*.pyd
+/python/*.pydVALIDATION.md
