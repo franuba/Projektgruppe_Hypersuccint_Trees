@@ -362,6 +362,34 @@ uint32_t hst_tree_serialize(HstTreeHandle handle, uint8_t* buf, uint32_t buf_cap
         }
     };
 
+    /* A matrix (2-D) of bitvectors, e.g. LookupTableEntry::childMatrix. */
+    auto write_bitvector_matrix = [&buf, &offset, &write_bitvector_vec](const std::vector<std::vector<std::vector<bool>>>& mat) {
+        uint32_t count = static_cast<uint32_t>(mat.size());
+        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
+        for (const auto& row : mat) {
+            write_bitvector_vec(row);
+        }
+    };
+
+    /* The rank/select support structures are succinct_bv::BitVector, whose
+     * raw bits are not exposed through the public API (only At/Rank/Select).
+     * For now we record the count and write a zero-length placeholder per
+     * element so the format stays well-formed; the current (stub)
+     * deserializer does not need the actual support data. */
+    auto write_succinct_bv_vec = [&buf, &offset, &write_bitvector](const std::vector<succinct_bv::BitVector>& vec) {
+        uint32_t count = static_cast<uint32_t>(vec.size());
+        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
+        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
+        for (size_t i = 0; i < vec.size(); i++) {
+            write_bitvector(std::vector<bool>());
+        }
+    };
+
     /* Write top-level sizes */
     write_bitvector(hst->getSize());
     write_bitvector(hst->getMicroSize());
@@ -385,9 +413,9 @@ uint32_t hst_tree_serialize(HstTreeHandle handle, uint8_t* buf, uint32_t buf_cap
 
         for (const auto& mt : mini_trees) {
             write_bitvector_vec(mt.FIDs);
-            write_bitvector_vec(mt.FIDsSupport);  /* succinct bv - skip for now, write empty */
+            write_succinct_bv_vec(mt.FIDsSupport);  /* succinct bv support: count + zero-length placeholders */
             write_bitvector_vec(mt.typeVectors);
-            write_bitvector_vec(mt.typeVectorsSupport);
+            write_succinct_bv_vec(mt.typeVectorsSupport);
             write_bitvector_vec(mt.dummys);
             write_bitvector_vec(mt.microTrees);
 
@@ -446,7 +474,7 @@ uint32_t hst_tree_serialize(HstTreeHandle handle, uint8_t* buf, uint32_t buf_cap
             write_bitvector(entry.index);
             write_bitvector(entry.bp);
             write_bitvector(entry.ancestorMatrix);
-            write_bitvector_vec(entry.childMatrix);
+            write_bitvector_matrix(entry.childMatrix);
             write_bitvector_vec(entry.childRanks);
             write_bitvector_vec(entry.parentPointers);
             write_bitvector_vec(entry.degree);
