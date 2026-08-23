@@ -19,6 +19,42 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+#include <cstdint>
+
+/* ================================================================== */
+/*  Handle wrapper                                                     */
+/* ================================================================== */
+
+/**
+ * The FFI handle owns the HypersuccinctTree plus the balanced-parenthesis
+ * input it was built from.  Keeping the BP around makes serialization a
+ * lossless roundtrip: serialize() emits the BP + construction flags and
+ * deserialize() rebuilds an equivalent tree through the factory.
+ */
+struct HstTreeWrapper {
+    std::unique_ptr<pht::HypersuccinctTree> tree;
+    std::vector<bool> bp;
+    uint8_t huffman;
+    uint32_t size_mini;
+    uint32_t size_micro;
+};
+
+namespace {
+
+inline HstTreeWrapper* wrapper_of(HstTreeHandle handle) {
+    return static_cast<HstTreeWrapper*>(handle);
+}
+
+inline pht::HypersuccinctTree* unwrap_tree(HstTreeHandle handle) {
+    return wrapper_of(handle)->tree.get();
+}
+
+/* Sentinel node meaning "no such node" (parent of root, OOB child...).
+ * Must NOT collide with the root, which lives at {0, 0, 0}. */
+constexpr HstNode kInvalidNode{UINT32_MAX, UINT32_MAX, UINT32_MAX};
+
+}  // namespace
+
 
 /* ================================================================== */
 /*  Internal helpers                                                   */
@@ -78,6 +114,56 @@ bp_to_unordered_tree(const std::vector<bool>& bp) {
 /*  Construction / Destruction                                         */
 /* ================================================================== */
 
+/* Required capacity in bytes for serializing `handle`.
+ * Format v2 stores the construction inputs (BP bitvector + flags):
+ *   [0..3]   magic "HST" + version byte
+ *   [4]      huffman flag
+ *   [5..8]   size_mini (LE)
+ *   [9..12]  size_micro (LE)
+ *   [13..16] bp_len (LE)
+ *   [17..]   BP bits packed MSB-first into bytes
+ *
+ * It is intentionally NOT the compressed HST representation; keeping the
+ * source BP makes the serialize/deserialize roundtrip lossless while
+ * hst_tree_byte_size() remains the measure of encoded structure size.
+ */
+static uint32_t serialized_size(const HstTreeWrapper* w) {
+    return 17u + static_cast<uint32_t>((w->bp.size() + 7) / 8);
+}
+
+/* Shared construction path used by both hst_tree_create_from_bp() and
+ * hst_tree_deserialize(). Returns a fresh wrapper or nullptr. */
+static HstTreeHandle build_hst(const std::vector<bool>& bp_vec,
+                               uint8_t huffman,
+                               uint32_t size_mini,
+                               uint32_t size_micro) {
+    if (bp_vec.empty()) return nullptr;
+
+    /* Build intermediate UnorderedTree */
+    auto tree = bp_to_unordered_tree(bp_vec);
+    if (tree->isEmpty()) return nullptr;
+
+    auto hst = pht::HypersuccinctTreeFactory::create(
+        tree,
+        huffman != 0,
+        size_mini,
+        size_micro,
+        true  /* doQueries */
+    );
+
+    auto* wrapper = new HstTreeWrapper{
+        std::move(hst),
+        bp_vec,
+        huffman,
+        size_mini,
+        size_micro
+    };
+    return static_cast<HstTreeHandle>(wrapper);
+}
+
+/* The FFI target is built with CXX_VISIBILITY_PRESET hidden; re-enable
+ * default visibility so the C API below is exported from libhst_ffi.so. */
+#pragma GCC visibility push(default)
 extern "C" {
 
 HstTreeHandle hst_tree_create_from_bp(
@@ -96,28 +182,12 @@ HstTreeHandle hst_tree_create_from_bp(
         bp_vec[i] = (bp[i] != 0);
     }
 
-    /* Build intermediate UnorderedTree */
-    auto tree = bp_to_unordered_tree(bp_vec);
-    if (tree->isEmpty()) {
-        return nullptr;
-    }
-
-    /* Create HST via factory */
-    auto hst = pht::HypersuccinctTreeFactory::create(
-        tree,
-        huffman != 0,
-        size_mini,
-        size_micro,
-        true  /* doQueries */
-    );
-
-    return static_cast<HstTreeHandle>(hst.release());
+    return build_hst(bp_vec, huffman != 0 ? 1u : 0u, size_mini, size_micro);
 }
 
 void hst_tree_free(HstTreeHandle handle) {
     if (handle == nullptr) return;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
-    delete hst;
+    delete wrapper_of(handle);
 }
 
 /* ================================================================== */
@@ -126,7 +196,7 @@ void hst_tree_free(HstTreeHandle handle) {
 
 uint32_t hst_tree_node_count(HstTreeHandle handle) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     /* Decode the size bitvector (binary encoding of node count) */
     const auto& size_bv = hst->getSize();
     if (size_bv.empty()) return 0;
@@ -140,19 +210,19 @@ uint32_t hst_tree_node_count(HstTreeHandle handle) {
 
 uint64_t hst_tree_byte_size(HstTreeHandle handle) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     return hst->getByteSize();
 }
 
 int hst_tree_is_huffman(HstTreeHandle handle) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     return hst->isHuffman() ? 1 : 0;
 }
 
 uint32_t hst_tree_minitree_count(HstTreeHandle handle) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     return static_cast<uint32_t>(hst->getMiniTrees().size());
 }
 
@@ -161,37 +231,46 @@ uint32_t hst_tree_minitree_count(HstTreeHandle handle) {
 /* ================================================================== */
 
 HstNode hst_tree_root(HstTreeHandle handle) {
-    if (handle == nullptr) return {0, 0, 0};
-    /* The root is always at MiniTree 0, MicroTree 0, node 0 */
+    if (handle == nullptr) return kInvalidNode;
+    /* The root is always at MiniTree 0, MicroTree 0, node 0.
+     * This does NOT collide with kInvalidNode (all-UINT32_MAX). */
     return {0, 0, 0};
 }
 
 HstNode hst_tree_parent(HstTreeHandle handle, HstNode node) {
-    if (handle == nullptr) return {0, 0, 0};
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    if (handle == nullptr) return kInvalidNode;
+    /* The root has no parent.  Querying it would underflow inside
+     * HypersuccinctTree::getParent (miniParent = 0 - 1), so guard here. */
+    if (node.mini == 0 && node.micro == 0 && node.node == 0) {
+        return kInvalidNode;
+    }
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     pht::HstNode parent = hst->getParent(cpp_node);
     return {parent.mini, parent.micro, parent.node};
 }
 
 HstNode hst_tree_child(HstTreeHandle handle, HstNode parent, uint32_t index) {
-    if (handle == nullptr) return {0, 0, 0};
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    if (handle == nullptr) return kInvalidNode;
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_parent{parent.mini, parent.micro, parent.node};
+    if (index >= hst->degree(cpp_parent)) {
+        return kInvalidNode;
+    }
     pht::HstNode child = hst->child(cpp_parent, index);
     return {child.mini, child.micro, child.node};
 }
 
 uint32_t hst_tree_child_rank(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->childRank(cpp_node);
 }
 
 uint32_t hst_tree_degree(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->degree(cpp_node);
 }
@@ -202,50 +281,50 @@ uint32_t hst_tree_degree(HstTreeHandle handle, HstNode node) {
 
 uint32_t hst_tree_depth(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->depth(cpp_node);
 }
 
 uint32_t hst_tree_height(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->height(cpp_node);
 }
 
 uint32_t hst_tree_subtree_size(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->subtreeSize(cpp_node);
 }
 
 uint32_t hst_tree_leaf_size(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->leafSize(cpp_node);
 }
 
 uint32_t hst_tree_leaf_rank(HstTreeHandle handle, HstNode node) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     return hst->leafRank(cpp_node);
 }
 
 HstNode hst_tree_leftmost_leaf(HstTreeHandle handle, HstNode node) {
-    if (handle == nullptr) return {0, 0, 0};
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    if (handle == nullptr) return kInvalidNode;
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     pht::HstNode leaf = hst->leftmostLeaf(cpp_node);
     return {leaf.mini, leaf.micro, leaf.node};
 }
 
 HstNode hst_tree_rightmost_leaf(HstTreeHandle handle, HstNode node) {
-    if (handle == nullptr) return {0, 0, 0};
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    if (handle == nullptr) return kInvalidNode;
+    auto* hst = unwrap_tree(handle);
     pht::HstNode cpp_node{node.mini, node.micro, node.node};
     pht::HstNode leaf = hst->rightmostLeaf(cpp_node);
     return {leaf.mini, leaf.micro, leaf.node};
@@ -257,7 +336,7 @@ HstNode hst_tree_rightmost_leaf(HstTreeHandle handle, HstNode node) {
 
 int hst_tree_is_ancestor(HstTreeHandle handle, HstNode ancestor, HstNode descendant) {
     if (handle == nullptr) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
+    auto* hst = unwrap_tree(handle);
 
     pht::HstNode anc{ancestor.mini, ancestor.micro, ancestor.node};
     pht::HstNode desc{descendant.mini, descendant.micro, descendant.node};
@@ -297,222 +376,81 @@ int hst_tree_is_ancestor(HstTreeHandle handle, HstNode ancestor, HstNode descend
 /* ================================================================== */
 
 uint32_t hst_tree_serialize(HstTreeHandle handle, uint8_t* buf, uint32_t buf_capacity) {
-    if (handle == nullptr || buf == nullptr || buf_capacity == 0) return 0;
-    auto* hst = static_cast<pht::HypersuccinctTree*>(handle);
-    uint64_t expected = hst->getByteSize();
-    if (expected > buf_capacity) return 0;
+    if (handle == nullptr) return 0;
+    auto* w = wrapper_of(handle);
 
-    /* Use the existing write-to-file format but write to a raw buffer.
-     * For simplicity we write a length-prefixed binary blob:
-     *   [4 bytes: magic "HST\x00"]
-     *   [4 bytes: total payload length]
-     *   [payload: bitvector-based serialization]
-     *
-     * We reuse HypersuccinctTreeOutput::writeToFile format by writing
-     * to a temporary file and reading it back, OR we implement a
-     * direct binary serialization here.
-     *
-     * For now, implement a simple direct serialization:
-     * Write the huffman flag, sizes, and all bitvectors.
-     */
+    uint32_t needed = serialized_size(w);
+    if (buf == nullptr) return needed;      /* capacity query */
+    if (buf_capacity < needed) return 0;
 
     uint32_t offset = 0;
 
-    /* Magic */
+    /* Magic + version */
     buf[offset++] = 'H';
     buf[offset++] = 'S';
     buf[offset++] = 'T';
-    buf[offset++] = 0;
+    buf[offset++] = 0x02;
 
-    /* We'll compute the actual size and write a placeholder */
-    uint32_t header_start = offset;
-    offset += 4;  /* placeholder for payload length */
+    /* Construction parameters */
+    buf[offset++] = w->huffman;
 
-    uint32_t payload_start = offset;
-
-    /* Huffman flag */
-    buf[offset++] = hst->isHuffman() ? 1 : 0;
-
-    /* Size bitvectors (binary-encoded uint32) */
-    auto write_bitvector = [&buf, &offset](const std::vector<bool>& bv) {
-        /* Write length as uint32 (little-endian) then bits packed into bytes */
-        uint32_t len = static_cast<uint32_t>(bv.size());
-        buf[offset++] =  static_cast<uint8_t>((len      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((len >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((len >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((len >> 24) & 0xFF);
-
-        for (uint32_t i = 0; i < len; i += 8) {
-            uint8_t byte = 0;
-            for (int j = 0; j < 8 && (i + j) < len; j++) {
-                byte |= (bv[i + j] ? (1u << (7 - j)) : 0u);
-            }
-            buf[offset++] = byte;
-        }
+    auto write_u32 = [&buf, &offset](uint32_t v) {
+        buf[offset++] = static_cast<uint8_t>((v      ) & 0xFF);
+        buf[offset++] = static_cast<uint8_t>((v >>  8) & 0xFF);
+        buf[offset++] = static_cast<uint8_t>((v >> 16) & 0xFF);
+        buf[offset++] = static_cast<uint8_t>((v >> 24) & 0xFF);
     };
+    write_u32(w->size_mini);
+    write_u32(w->size_micro);
 
-    auto write_bitvector_vec = [&buf, &offset, &write_bitvector](const std::vector<std::vector<bool>>& vec) {
-        uint32_t count = static_cast<uint32_t>(vec.size());
-        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
-        for (const auto& bv : vec) {
-            write_bitvector(bv);
+    uint32_t n = static_cast<uint32_t>(w->bp.size());
+    write_u32(n);
+
+    for (uint32_t i = 0; i < n; i += 8) {
+        uint8_t byte = 0;
+        for (int j = 0; j < 8 && (i + j) < n; j++) {
+            byte |= (w->bp[i + j] ? static_cast<uint8_t>(1u << (7 - j)) : 0u);
         }
-    };
-
-    /* A matrix (2-D) of bitvectors, e.g. LookupTableEntry::childMatrix. */
-    auto write_bitvector_matrix = [&buf, &offset, &write_bitvector_vec](const std::vector<std::vector<std::vector<bool>>>& mat) {
-        uint32_t count = static_cast<uint32_t>(mat.size());
-        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
-        for (const auto& row : mat) {
-            write_bitvector_vec(row);
-        }
-    };
-
-    /* The rank/select support structures are succinct_bv::BitVector, whose
-     * raw bits are not exposed through the public API (only At/Rank/Select).
-     * For now we record the count and write a zero-length placeholder per
-     * element so the format stays well-formed; the current (stub)
-     * deserializer does not need the actual support data. */
-    auto write_succinct_bv_vec = [&buf, &offset, &write_bitvector](const std::vector<succinct_bv::BitVector>& vec) {
-        uint32_t count = static_cast<uint32_t>(vec.size());
-        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
-        for (size_t i = 0; i < vec.size(); i++) {
-            write_bitvector(std::vector<bool>());
-        }
-    };
-
-    /* Write top-level sizes */
-    write_bitvector(hst->getSize());
-    write_bitvector(hst->getMicroSize());
-    write_bitvector(hst->getMiniSize());
-
-    /* Write interconnections */
-    write_bitvector_vec(hst->getMiniFIDs());
-    write_bitvector_vec(hst->getFIDTopTrees());
-    write_bitvector_vec(hst->getFIDLowTrees());
-    write_bitvector_vec(hst->getMiniTypeVectors());
-    write_bitvector_vec(hst->getMiniDummys());
-
-    /* Write MiniTrees */
-    {
-        const auto& mini_trees = hst->getMiniTrees();
-        uint32_t count = static_cast<uint32_t>(mini_trees.size());
-        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
-
-        for (const auto& mt : mini_trees) {
-            write_bitvector_vec(mt.FIDs);
-            write_succinct_bv_vec(mt.FIDsSupport);  /* succinct bv support: count + zero-length placeholders */
-            write_bitvector_vec(mt.typeVectors);
-            write_succinct_bv_vec(mt.typeVectorsSupport);
-            write_bitvector_vec(mt.dummys);
-            write_bitvector_vec(mt.microTrees);
-
-            write_bitvector(mt.miniTopFIDIndex);
-            write_bitvector(mt.miniLowFIDIndex);
-            write_bitvector_vec(mt.microTopFIDIndices);
-            write_bitvector_vec(mt.microLowFIDIndices);
-            write_bitvector_vec(mt.microFIDTopTrees);
-            write_bitvector_vec(mt.microFIDLowTrees);
-
-            write_bitvector(mt.rootAncestors);
-            write_bitvector(mt.dummyAncestors);
-            write_bitvector(mt.miniDummyTree);
-            write_bitvector(mt.miniDummyIndex);
-            write_bitvector(mt.miniDummyPointer);
-            write_bitvector_vec(mt.microDummyPointers);
-
-            write_bitvector(mt.miniChildRank);
-            write_bitvector_vec(mt.microChildRanks);
-            write_bitvector_vec(mt.microExtendedChildRanks);
-
-            write_bitvector(mt.miniParent);
-            write_bitvector_vec(mt.microParents);
-
-            write_bitvector(mt.subTree);
-            write_bitvector_vec(mt.microSubTrees);
-            write_bitvector(mt.miniDepth);
-            write_bitvector(mt.miniHeight);
-            write_bitvector(mt.miniDummyDepth);
-            write_bitvector(mt.miniDummyHeight);
-            write_bitvector_vec(mt.rootDepths);
-            write_bitvector_vec(mt.rootHeights);
-            write_bitvector(mt.miniLeaves);
-            write_bitvector_vec(mt.microLeaves);
-            write_bitvector(mt.miniTreeLeftmostLeafPointer);
-            write_bitvector(mt.miniTreeRightmostLeafPointer);
-            write_bitvector_vec(mt.microTreeLeftmostLeafPointers);
-            write_bitvector_vec(mt.microTreeRightmostLeafPointers);
-            write_bitvector(mt.miniRootLeafRank);
-            write_bitvector(mt.miniDummyLeafRank);
-            write_bitvector_vec(mt.microRootLeafRanks);
-            write_bitvector_vec(mt.microExtendedLeafRanks);
-        }
+        buf[offset++] = byte;
     }
-
-    /* Write Lookup Table */
-    {
-        const auto& lt = hst->getLookupTable();
-        uint32_t count = static_cast<uint32_t>(lt.size());
-        buf[offset++] =  static_cast<uint8_t>((count      ) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >>  8) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 16) & 0xFF);
-        buf[offset++] =  static_cast<uint8_t>((count >> 24) & 0xFF);
-
-        for (const auto& entry : lt) {
-            write_bitvector(entry.index);
-            write_bitvector(entry.bp);
-            write_bitvector(entry.ancestorMatrix);
-            write_bitvector_matrix(entry.childMatrix);
-            write_bitvector_vec(entry.childRanks);
-            write_bitvector_vec(entry.parentPointers);
-            write_bitvector_vec(entry.degree);
-            write_bitvector_vec(entry.subTrees);
-            write_bitvector_vec(entry.nodeDepths);
-            write_bitvector_vec(entry.nodeHeights);
-            write_bitvector_vec(entry.leaves);
-            write_bitvector_vec(entry.leftmost_leaf);
-            write_bitvector_vec(entry.rightmost_leaf);
-            write_bitvector_vec(entry.leafRank);
-        }
-    }
-
-    /* Fill in payload length */
-    uint32_t payload_len = offset - payload_start;
-    header_start = offset - (payload_start - header_start) - 4;
-    buf[header_start]     =  static_cast<uint8_t>((payload_len      ) & 0xFF);
-    buf[header_start + 1] =  static_cast<uint8_t>((payload_len >>  8) & 0xFF);
-    buf[header_start + 2] =  static_cast<uint8_t>((payload_len >> 16) & 0xFF);
-    buf[header_start + 3] =  static_cast<uint8_t>((payload_len >> 24) & 0xFF);
 
     return offset;
 }
 
 HstTreeHandle hst_tree_deserialize(const uint8_t* buf, uint32_t len) {
-    if (buf == nullptr || len < 8) return nullptr;
+    if (buf == nullptr || len < 17) return nullptr;
 
-    /* Verify magic */
-    if (buf[0] != 'H' || buf[1] != 'S' || buf[2] != 'T' || buf[3] != 0) {
+    /* Verify magic + version */
+    if (buf[0] != 'H' || buf[1] != 'S' || buf[2] != 'T' || buf[3] != 0x02) {
         return nullptr;
     }
 
-    /* For now, deserialization is a TODO - the format is complex.
-     * Return nullptr to indicate "not yet implemented".
-     * In production, this would mirror the serialization logic. */
-    (void)len;  /* suppress unused warning */
-    return nullptr;
+    uint32_t offset = 4;
+    uint8_t huffman = buf[offset++];
+
+    auto read_u32 = [&buf, &offset]() {
+        uint32_t v = static_cast<uint32_t>(buf[offset])
+                   | (static_cast<uint32_t>(buf[offset + 1]) << 8)
+                   | (static_cast<uint32_t>(buf[offset + 2]) << 16)
+                   | (static_cast<uint32_t>(buf[offset + 3]) << 24);
+        offset += 4;
+        return v;
+    };
+    uint32_t size_mini = read_u32();
+    uint32_t size_micro = read_u32();
+    uint32_t n = read_u32();
+
+    if (n == 0 || len < offset + (n + 7) / 8) return nullptr;
+
+    std::vector<bool> bp_vec(n);
+    for (uint32_t i = 0; i < n; i++) {
+        uint8_t byte = buf[offset + i / 8];
+        bp_vec[i] = ((byte >> (7 - (i % 8))) & 1u) != 0;
+    }
+
+    return build_hst(bp_vec, huffman, size_mini, size_micro);
 }
+
 
 /* ================================================================== */
 /*  Utility helpers                                                     */
@@ -523,7 +461,8 @@ int hst_node_equal(HstNode a, HstNode b) {
 }
 
 HstNode hst_node_invalid(void) {
-    return {0, 0, 0};
+    return kInvalidNode;
 }
 
 } /* extern "C" */
+#pragma GCC visibility pop

@@ -123,7 +123,8 @@ HstNode hst_tree_root(HstTreeHandle handle);
  * Return the direct parent of a node.
  * @param handle  HST handle.
  * @param node    Node whose parent to look up.
- * @return        Parent HstNode.  If the node IS the root, returns {0,0,0}.
+ * @return        Parent HstNode.  If the node IS the root, returns
+ *                hst_node_invalid().
  */
 HstNode hst_tree_parent(HstTreeHandle handle, HstNode node);
 
@@ -132,7 +133,8 @@ HstNode hst_tree_parent(HstTreeHandle handle, HstNode node);
  * @param handle  HST handle.
  * @param parent  Parent node.
  * @param index   Zero-based child index.
- * @return        Child HstNode.  Returns {0,0,0} if index >= degree.
+ * @return        Child HstNode.  Returns hst_node_invalid() if
+ *                index >= degree(parent).
  */
 HstNode hst_tree_child(HstTreeHandle handle, HstNode parent, uint32_t index);
 
@@ -234,16 +236,22 @@ int hst_tree_is_ancestor(HstTreeHandle handle, HstNode ancestor, HstNode descend
 /**
  * Serialize an HST to a byte buffer.
  *
+ * The format stores the construction inputs (balanced-parenthesis
+ * bitvector plus flags), so hst_tree_deserialize() reproduces an
+ * equivalent tree.  It is NOT the compressed HST representation;
+ * use hst_tree_byte_size() for the encoded size of the structure.
+ *
  * @param handle       HST handle.
  * @param buf          Output buffer (caller-allocated).
  * @param buf_capacity Capacity of the buffer in bytes.
- * @return             Number of bytes written, or 0 on failure
- *                     (buffer too small; call hst_tree_byte_size first).
+ * @return             Number of bytes written, or 0 on failure.
+ *                     Call with buf == NULL to query the required
+ *                     capacity.
  */
 uint32_t hst_tree_serialize(HstTreeHandle handle, uint8_t* buf, uint32_t buf_capacity);
 
 /**
- * Deserialize an HST from a byte buffer.
+ * Deserialize an HST from a byte buffer produced by hst_tree_serialize().
  *
  * @param buf  Pointer to serialized bytes.
  * @param len  Number of bytes.
@@ -264,7 +272,8 @@ HstTreeHandle hst_tree_deserialize(const uint8_t* buf, uint32_t len);
 int hst_node_equal(HstNode a, HstNode b);
 
 /**
- * Return a zero-initialized (invalid) HstNode.
+ * Return the sentinel HstNode used to signal "no such node"
+ * (e.g. parent of the root, out-of-range child index).
  */
 HstNode hst_node_invalid(void);
 
