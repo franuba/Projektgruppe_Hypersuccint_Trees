@@ -26,3 +26,14 @@ set_target_properties(hst_ffi PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
 )
+
+# --- FFI Static Library (for linking into Rust binaries/tests) ---
+# Same sources as pht_lib + hst_ffi.cpp bundled into one archive so that
+# consumers (e.g. cargo) only need to link a single static library plus
+# the extern static dependencies.
+add_library(hst_ffi_static STATIC
+    "${CMAKE_CURRENT_LIST_DIR}/hst_ffi.cpp"
+    ${PHT_LIB_SOURCES}
+)
+target_link_libraries(hst_ffi_static PUBLIC succinct_bv irrxml thread-pool-2.0.0)
+target_include_directories(hst_ffi_static PUBLIC "${PROJECT_SOURCE_DIR}/include")
