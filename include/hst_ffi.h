@@ -277,6 +277,16 @@ int hst_node_equal(HstNode a, HstNode b);
  */
 HstNode hst_node_invalid(void);
 
+/* ------------------------------------------------------------------ */
+/*  Logging                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Set the C++ HST library log level (0=DEBUG .. 4=FATAL). The default is
+ * DEBUG (0), which is very noisy; benchmarks typically set 4 to silence it.
+ */
+void hst_set_log_level(int level);
+
 #ifdef __cplusplus
 }
 #endif

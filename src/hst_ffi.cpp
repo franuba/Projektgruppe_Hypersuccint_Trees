@@ -14,6 +14,7 @@
 #include "pht/unordered_tree.h"
 #include "pht/node.h"
 #include "pht/xml_reader.h"
+#include "pht/logger.h"
 
 #include <memory>
 #include <cstring>
@@ -462,6 +463,10 @@ int hst_node_equal(HstNode a, HstNode b) {
 
 HstNode hst_node_invalid(void) {
     return kInvalidNode;
+}
+
+void hst_set_log_level(int level) {
+    pht::Logger::setLogLevel(static_cast<pht::Logger::LogLevel>(level));
 }
 
 } /* extern "C" */
